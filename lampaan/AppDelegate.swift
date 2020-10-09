@@ -22,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem!
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        
         self.statusBarItem = NSStatusBar.system.statusItem(withLength: CGFloat(NSStatusItem.variableLength))
         if let button = self.statusBarItem.button {
             button.image = NSImage(named: "LampUit")
@@ -30,29 +31,45 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         checkLightStatus() {(statusOn) in
             self.setIcon(statusOn)
         }
+        
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(sleepListener), name: NSWorkspace.willSleepNotification, object: nil)
+        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(sleepListener), name: NSWorkspace.didWakeNotification, object: nil)
+
+    }
+    
+    @objc func sleepListener(aNotification : NSNotification) {
+        if (isInStudyRoom() && isDark()) {
+            if aNotification.name == NSWorkspace.willSleepNotification{
+                setLightStatus(false)
+            }else if aNotification.name == NSWorkspace.didWakeNotification{
+                setLightStatus(true)
+            }
+        }
     }
     
     @objc func switchLight(_ sender: AnyObject?) {
-        
         checkLightStatus{(statusOn) in
-            do {
-                
-                let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
-                let newState = State(on: !statusOn);
-                let putUrl = URL(string: "\(bulbUrl)/state")!
-                var request = URLRequest(url: putUrl)
-                request.httpMethod = "PUT"
-                request.httpBody = try JSONEncoder().encode(newState)
-                request.setValue("Application/json", forHTTPHeaderField: "Content-Type")
-                
-                let putTask = session.dataTask(with: request) { (data, response, error) in
-                    self.setIcon(newState.on)
-                }
-                putTask.resume()
-                
-            } catch {
-                print("Could not switch light")
+            self.setLightStatus(!statusOn)
+        }
+    }
+    
+    func setLightStatus(_ newStatus: Bool) {
+        do {
+            let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
+            let newState = State(on: newStatus);
+            let putUrl = URL(string: "\(bulbUrl)/state")!
+            var request = URLRequest(url: putUrl)
+            request.httpMethod = "PUT"
+            request.httpBody = try JSONEncoder().encode(newState)
+            request.setValue("Application/json", forHTTPHeaderField: "Content-Type")
+            
+            let putTask = session.dataTask(with: request) { (data, response, error) in
+                self.setIcon(newState.on)
             }
+            putTask.resume()
+            
+        } catch {
+            print("Could not switch light")
         }
     }
     
@@ -81,6 +98,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
     }
+    
+    func isInStudyRoom() -> Bool {
+        return !(NSScreen.screens.allSatisfy({$0.localizedName != "C34J79x"}));
+    }
+    
+    func isDark() -> Bool {
+        
+        let now = Date()
+        let calendar = Calendar.current
+//        let month = calendar.component(.month, from: now)
+//        let day = calendar.component(.day, from: now)
+        let hour = calendar.component(.hour, from: now)
+        let minute = calendar.component(.minute, from: now)
+        
+//        let date = month * 100 + day;
+        let time = hour * 100 + minute;
+        
+        return time < 0900 || time > 1800;
+        
+    }
 }
 
 extension AppDelegate: URLSessionDelegate {
@@ -91,3 +128,4 @@ extension AppDelegate: URLSessionDelegate {
         completionHandler(.useCredential, urlCredential)
     }
 }
+
