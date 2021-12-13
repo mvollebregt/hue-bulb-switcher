@@ -23,15 +23,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var statusBarItem: NSStatusItem!
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        
-        self.statusBarItem = NSStatusBar.system.statusItem(withLength: CGFloat(NSStatusItem.variableLength))
-        if let button = self.statusBarItem.button {
-            button.image = NSImage(named: "LampUit")
-            button.action = #selector(switchLight(_:))
-        }
-        checkLightStatus() {(statusOn) in
-            self.setIcon(statusOn)
-        }
+
+        switchLight(nil);
+
+        // The code below adds a button to the task bar to switch the light on and off.
+//        self.statusBarItem = NSStatusBar.system.statusItem(withLength: CGFloat(NSStatusItem.variableLength))
+//        if let button = self.statusBarItem.button {
+//            button.image = NSImage(named: "LampUit")
+//            button.action = #selector(switchLight(_:))
+//        }
+//        checkLightStatus() {(statusOn) in
+//            self.setIcon(statusOn)
+//        }
 
         // The code below will switch lights on and off automatically based on the time of the day, the sleep status of
         // the computer and the monitor the computer is connected to. It is disabled for now.
@@ -68,6 +71,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             
             let putTask = session.dataTask(with: request) { (data, response, error) in
                 self.setIcon(newState.on)
+                exit(0);
             }
             putTask.resume()
         } catch {
@@ -94,7 +98,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func setIcon(_ lightOn: Bool) {
-        if let button = self.statusBarItem.button {
+        if let button = statusBarItem?.button {
             DispatchQueue.main.async {
                 button.image = NSImage(named: lightOn ? "LampAan" : "LampUit")
             }
