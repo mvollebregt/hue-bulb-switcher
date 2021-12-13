@@ -32,9 +32,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         checkLightStatus() {(statusOn) in
             self.setIcon(statusOn)
         }
-        
-        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(sleepListener), name: NSWorkspace.willSleepNotification, object: nil)
-        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(sleepListener), name: NSWorkspace.didWakeNotification, object: nil)
+
+        // The code below will switch lights on and off automatically based on the time of the day, the sleep status of
+        // the computer and the monitor the computer is connected to. It is disabled for now.
+//        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(sleepListener), name: NSWorkspace.willSleepNotification, object: nil)
+//        NSWorkspace.shared.notificationCenter.addObserver(self, selector: #selector(sleepListener), name: NSWorkspace.didWakeNotification, object: nil)
 
     }
     
