@@ -10,6 +10,7 @@ import SwiftUI
 
 struct State: Encodable, Decodable {
     var on: Bool;
+    var bri: Int;
 }
 
 struct Lightbulb: Decodable {
@@ -56,7 +57,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func setLightStatus(_ newStatus: Bool) {
         do {
             let session = URLSession(configuration: URLSessionConfiguration.default, delegate: self, delegateQueue: nil)
-            let newState = State(on: newStatus);
+            let newState = State(on: newStatus, bri: newStatus ? 176 : 0);
             let putUrl = URL(string: "\(bulbUrl)/state")!
             var request = URLRequest(url: putUrl)
             request.httpMethod = "PUT"
@@ -67,7 +68,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self.setIcon(newState.on)
             }
             putTask.resume()
-            
         } catch {
             print("Could not switch light")
         }
